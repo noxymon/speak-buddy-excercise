@@ -11,31 +11,23 @@ import com.speakbuddy.service.soundreceiverapi.service.audio.parameter.AudioRetr
 import com.speakbuddy.service.soundreceiverapi.service.audio.parameter.AudioRetrieverOutput;
 import com.speakbuddy.service.soundreceiverapi.service.audio.storage.AudioStorage;
 import com.speakbuddy.service.soundreceiverapi.service.audio.storage.parameter.StorageOutput;
-import org.aspectj.lang.annotation.Before;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.event.annotation.BeforeTestMethod;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
 @ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 class AudioRetrieverTest {
 
     @Mock
@@ -50,13 +42,11 @@ class AudioRetrieverTest {
     @Mock
     private MappingUserPhraseRepository mappingUserPhraseRepository;
 
-    @Value("${application.audio.output.format}")
-    private String outputFormat;
-
     private AudioRetriever audioRetriever;
 
     @BeforeEach
     void setUp() {
+        String outputFormat = "wav";
         audioRetriever = new AudioRetriever(outputFormat, audioStorage, masterPhraseRepository, masterUserRepositories, mappingUserPhraseRepository);
     }
 
