@@ -5,6 +5,9 @@ WORKDIR /app
 COPY . .
 
 RUN chmod +x /app/mvnw
+
+# Test were skipped, due to the fact that the tests are not working in the docker container
+# so testing mechanism should one in separate processes
 RUN /app/mvnw clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
