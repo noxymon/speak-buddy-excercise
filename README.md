@@ -33,6 +33,20 @@ git clone https://github.com/noxymon-mekari/speakbuddy-sound-receiver-api.git
 cd speakbuddy-sound-receiver-api
 ```
 
+## Operational Dashboard
+### Swagger UI & Api docs
+this mini project also incorporate swagger-ui html page to see the api documentation and also to test the api
+```sh
+http://localhost:8080/api-docs
+http://localhost:8080/swagger-ui.html
+```
+
+### Background Job
+Dashboard to monitor current running task and status also can be seen in this url
+```sh
+http://localhost:8000/dashboard
+```
+
 ## Stack
 ### Database
 he application uses the H2 database for development and testing purposes. H2 is an in-memory database that is lightweight and fast, making it ideal for development environments. Using H2 simplifies the portability of the application, as it does not require any external database setup. This allows developers to quickly set up and run the application without additional configuration.  For production environments, the application can be easily enhanced to use other proper RDBMS (Relational Database Management Systems) such as MySQL, PostgreSQL, or Oracle. This can be achieved by updating the database configuration in the `application.properties` file and including the necessary dependencies in the pom.xml file.  
