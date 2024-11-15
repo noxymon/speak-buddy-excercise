@@ -17,7 +17,7 @@ public interface AudioStorage {
      * @return the storage output containing information about the saved file
      * @throws IOException if an I/O error occurs during saving
      */
-    StorageOutput save(AudioSaverInput input) throws IOException;
+    StorageOutput save(AudioSaverInput input) throws StorageException;
 
     /**
      * Retrieves the audio file from storage.
@@ -26,5 +26,5 @@ public interface AudioStorage {
      * @return the storage output containing the retrieved file
      * @throws IOException if an I/O error occurs during retrieval
      */
-    StorageOutput retrieve(String filename) throws IOException;
+    StorageOutput retrieve(String filename) throws StorageException;
 }

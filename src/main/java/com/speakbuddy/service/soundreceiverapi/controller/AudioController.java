@@ -3,20 +3,19 @@ package com.speakbuddy.service.soundreceiverapi.controller;
 
 import com.speakbuddy.service.soundreceiverapi.service.audio.AudioRetriever;
 import com.speakbuddy.service.soundreceiverapi.service.audio.AudioSaver;
+import com.speakbuddy.service.soundreceiverapi.service.audio.ServiceException;
 import com.speakbuddy.service.soundreceiverapi.service.audio.parameter.AudioRetrieverInput;
 import com.speakbuddy.service.soundreceiverapi.service.audio.parameter.AudioRetrieverOutput;
 import com.speakbuddy.service.soundreceiverapi.service.audio.parameter.AudioSaverInput;
-import io.micrometer.core.instrument.util.IOUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.Arrays;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/audio")
 @RequiredArgsConstructor
@@ -36,8 +35,11 @@ public class AudioController {
         try {
             AudioSaverInput audioSaverInput = new AudioSaverInput(userId, phraseId,file);
             audioSaver.save(audioSaverInput);
-        } catch (IOException e) {
+        } catch (ServiceException e) {
            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error(String.format("[storeAudio][%s][%s] Error occured. Cause: ", userId, phraseId), e);
+            return ResponseEntity.internalServerError().body("We'll back soon");
         }
 
         return ResponseEntity.accepted().build();
@@ -55,8 +57,11 @@ public class AudioController {
                     .contentType(MediaType.parseMediaType("audio/wav"))
                     .header("Accept-Ranges", "bytes")
                     .body(contentFile);
-        } catch (RuntimeException | IOException e) {
+        } catch (ServiceException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }  catch (Exception e) {
+            log.error(String.format("[getAudioByFormat][%s][%s] Error occured. Cause: ", userId, phraseId), e);
+            return ResponseEntity.internalServerError().body("We'll back soon");
         }
     }
 }

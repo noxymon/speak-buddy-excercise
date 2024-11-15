@@ -32,11 +32,13 @@ public class PersistenceDiskStorage implements AudioStorage {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    public StorageOutput save(AudioSaverInput audioSaverInput) throws IOException {
+    public StorageOutput save(AudioSaverInput audioSaverInput) throws StorageException {
         Path destinationFile = FileUtils.getFilenamePathFrom(rootLocation, audioSaverInput);
 
         try (InputStream inputStream = audioSaverInput.getFile().getInputStream()) {
             Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new StorageException(e);
         }
 
         return new StorageOutput(destinationFile);
@@ -50,7 +52,7 @@ public class PersistenceDiskStorage implements AudioStorage {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    public StorageOutput retrieve(String filename) throws IOException {
+    public StorageOutput retrieve(String filename) throws StorageException {
         return new StorageOutput(Paths.get(filename));
     }
 }

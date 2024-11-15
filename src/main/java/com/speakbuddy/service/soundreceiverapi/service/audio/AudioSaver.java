@@ -10,6 +10,7 @@ import com.speakbuddy.service.soundreceiverapi.repository.models.MasterUser;
 import com.speakbuddy.service.soundreceiverapi.service.audio.converter.AsyncConverter;
 import com.speakbuddy.service.soundreceiverapi.service.audio.parameter.AudioSaverInput;
 import com.speakbuddy.service.soundreceiverapi.service.audio.storage.AudioStorage;
+import com.speakbuddy.service.soundreceiverapi.service.audio.storage.StorageException;
 import com.speakbuddy.service.soundreceiverapi.service.audio.storage.parameter.StorageOutput;
 import com.speakbuddy.service.soundreceiverapi.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,6 @@ import org.jobrunr.scheduling.JobScheduler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -35,7 +35,7 @@ public class AudioSaver {
     @Value("${application.audio.root}")
     private Path rootLocation;
 
-    public void save(AudioSaverInput audioSaverInput) throws IOException {
+    public void save(AudioSaverInput audioSaverInput) {
         validateThenSaveUserPhraseMapping(audioSaverInput);
 
         String sourceAbsolutePath = saveAndGetSourceAbsolutePath(audioSaverInput);
@@ -44,7 +44,7 @@ public class AudioSaver {
         jobScheduler.enqueue(() -> converter.convert(sourceAbsolutePath, convertDestinationAbsolutePath));
     }
 
-    private String saveAndGetSourceAbsolutePath(AudioSaverInput audioSaverInput) throws IOException {
+    private String saveAndGetSourceAbsolutePath(AudioSaverInput audioSaverInput) throws StorageException {
         StorageOutput storageOutput = audioStorage.save(audioSaverInput);
         return storageOutput.absolutePathToString();
     }
@@ -52,12 +52,12 @@ public class AudioSaver {
     private void validateThenSaveUserPhraseMapping(AudioSaverInput audioSaverInput) {
         Optional<MasterUser> anyMasterUser = masterUserRepositories.findById(audioSaverInput.getUserId());
         if (anyMasterUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new ServiceException("User not found");
         }
 
         Optional<MasterPhrase> anyMasterPhrase = masterPhraseRepository.findById(audioSaverInput.getPhraseId());
         if (anyMasterPhrase.isEmpty()) {
-            throw new RuntimeException("Phrase not found");
+            throw new ServiceException("Phrase not found");
         }
 
         saveMappingUserWithPhrase(audioSaverInput, anyMasterUser);

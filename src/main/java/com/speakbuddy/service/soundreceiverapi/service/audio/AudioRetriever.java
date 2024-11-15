@@ -10,12 +10,12 @@ import com.speakbuddy.service.soundreceiverapi.repository.models.MasterUser;
 import com.speakbuddy.service.soundreceiverapi.service.audio.parameter.AudioRetrieverInput;
 import com.speakbuddy.service.soundreceiverapi.service.audio.parameter.AudioRetrieverOutput;
 import com.speakbuddy.service.soundreceiverapi.service.audio.storage.AudioStorage;
+import com.speakbuddy.service.soundreceiverapi.service.audio.storage.StorageException;
 import com.speakbuddy.service.soundreceiverapi.service.audio.storage.parameter.StorageOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -28,7 +28,11 @@ public class AudioRetriever {
     private final MappingUserPhraseRepository mappingUserPhraseRepository;
 
     @Autowired
-    public AudioRetriever(@Value("${application.audio.output.format}") String outputFormat, AudioStorage audioStorage, MasterPhraseRepository masterPhraseRepository, MasterUserRepositories masterUserRepositories, MappingUserPhraseRepository mappingUserPhraseRepository) {
+    public AudioRetriever(@Value("${application.audio.output.format}") String outputFormat,
+                          AudioStorage audioStorage,
+                          MasterPhraseRepository masterPhraseRepository,
+                          MasterUserRepositories masterUserRepositories,
+                          MappingUserPhraseRepository mappingUserPhraseRepository) {
         this.outputFormat = outputFormat;
         this.audioStorage = audioStorage;
         this.masterPhraseRepository = masterPhraseRepository;
@@ -36,26 +40,26 @@ public class AudioRetriever {
         this.mappingUserPhraseRepository = mappingUserPhraseRepository;
     }
 
-    public AudioRetrieverOutput GetAudioFrom(AudioRetrieverInput request) throws IOException {
+    public AudioRetrieverOutput GetAudioFrom(AudioRetrieverInput request) throws ServiceException {
         if (!outputFormat.equals(request.getAudioFormat())) {
-            throw new RuntimeException("Audio format not supported");
+            throw new ServiceException("Audio format not supported");
         }
 
         Optional<MasterUser> anyMasterUser = masterUserRepositories.findById(request.getUserId());
         if (anyMasterUser.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new ServiceException("User not found");
         }
 
         Optional<MasterPhrase> anyMasterPhrase = masterPhraseRepository.findById(request.getPhraseId());
         if (anyMasterPhrase.isEmpty()) {
-            throw new RuntimeException("Phrase not found");
+            throw new ServiceException("Phrase not found");
         }
 
         Optional<MappingUsersPhrase> anyMappingUserPhrase = findAnyMappingUserPhraseFrom(request);
         return composeAudioRetrieverOutputFrom(anyMappingUserPhrase);
     }
 
-    private AudioRetrieverOutput composeAudioRetrieverOutputFrom(Optional<MappingUsersPhrase> anyMappingUserPhrase) throws IOException {
+    private AudioRetrieverOutput composeAudioRetrieverOutputFrom(Optional<MappingUsersPhrase> anyMappingUserPhrase) throws StorageException {
         String convertedFilePath = anyMappingUserPhrase.get().getConvertedFilePath();
         StorageOutput retrieve = audioStorage.retrieve(convertedFilePath);
         return new AudioRetrieverOutput(retrieve.getFilename().toFile());
@@ -68,7 +72,7 @@ public class AudioRetriever {
 
         Optional<MappingUsersPhrase> anyMappingUserPhrase = mappingUserPhraseRepository.findById(mappingUsersPhraseId);
         if (anyMappingUserPhrase.isEmpty()) {
-            throw new RuntimeException("User have not record this phrase yet");
+            throw new ServiceException("User have not record this phrase yet");
         }
         return anyMappingUserPhrase;
     }
